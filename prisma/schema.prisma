@@ -5,6 +5,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Supports both PostgreSQL (production) and SQLite (local development)
+// PostgreSQL URL: "postgresql://user:password@host:5432/dbname"
+// SQLite URL: "file:./prisma/dev.db"
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")

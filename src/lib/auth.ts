@@ -36,8 +36,8 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ token, user }) {
-      if (user) {
+    async jwt({ token, user }: any) {
+      if (user && user.email) {
         token.email = user.email;
       }
       return token;

@@ -1,16 +1,10 @@
 'use client';
 
-import { Session } from 'next-auth';
 import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 
 interface HeaderProps {
-  session: Session & {
-    user?: {
-      role?: string;
-      clientId?: string;
-    };
-  };
+  session: any;
 }
 
 export default function Header({ session }: HeaderProps) {

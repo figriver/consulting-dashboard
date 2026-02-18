@@ -1,4 +1,3 @@
-import { Decimal } from '@prisma/client/runtime/library';
 import { SheetRow } from './sheets';
 
 export interface TransformedMetric {
@@ -12,10 +11,10 @@ export interface TransformedMetric {
   leads: number;
   consults: number;
   sales: number;
-  spend: Decimal;
-  roas: Decimal;
-  leadsToConsultRate: Decimal;
-  leadsToSaleRate: Decimal;
+  spend: number;
+  roas: number;
+  leadsToConsultRate: number;
+  leadsToSaleRate: number;
   rawDataJson: any;
 }
 
@@ -72,13 +71,14 @@ function parseNumber(value: any, defaultValue: number = 0): number {
   return isNaN(parsed) ? defaultValue : parsed;
 }
 
-function calculateConversionRate(numerator: number, denominator: number): Decimal {
+function calculateConversionRate(numerator: number, denominator: number): number {
   if (denominator === 0) {
-    return new Decimal(0);
+    return 0;
   }
 
-  const rate = (numerator / denominator);
-  return new Decimal(rate).toDecimalPlaces(4);
+  const rate = numerator / denominator;
+  // Round to 4 decimal places
+  return Math.round(rate * 10000) / 10000;
 }
 
 export function transformRow(row: SheetRow): TransformedMetric | null {
@@ -100,17 +100,17 @@ export function transformRow(row: SheetRow): TransformedMetric | null {
     const leads = leadsCol ? parseNumber(row[leadsCol]) : 0;
     const consults = consultsCol ? parseNumber(row[consultsCol]) : 0;
     const sales = salesCol ? parseNumber(row[salesCol]) : 0;
-    const spend = spendCol ? new Decimal(parseNumber(row[spendCol])) : new Decimal(0);
-    
+    const spend = spendCol ? parseNumber(row[spendCol]) : 0;
+
     // Calculate ROAS if not provided
-    let roas: Decimal;
+    let roas: number;
     if (roasCol) {
-      roas = new Decimal(parseNumber(row[roasCol]));
+      roas = parseNumber(row[roasCol]);
     } else {
-      if (spend.toNumber() === 0) {
-        roas = new Decimal(0);
+      if (spend === 0) {
+        roas = 0;
       } else {
-        roas = new Decimal(sales).div(spend).toDecimalPlaces(4);
+        roas = Math.round((sales / spend) * 10000) / 10000;
       }
     }
 
