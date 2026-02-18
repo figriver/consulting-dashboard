@@ -2,57 +2,101 @@
 
 Automated multi-client consulting dashboard replacing manual Tableau reports. Built with Next.js 14, React 18, shadcn/ui, Recharts, and PostgreSQL.
 
+## Status
+
+**MVP Phase 1: COMPLETE** ✅
+
+- Frontend UI: Dashboard, KPI cards, Recharts visualizations, admin panel
+- Backend APIs: All core endpoints implemented and tested
+- Database: Prisma schema ready for PostgreSQL
+- Authentication: Google OAuth configured and working
+- Deployment: Ready for Vercel + Railway
+
+**Ready to Deploy & Start Testing with Real Data**
+
+Next: Set up database, deploy to Vercel, configure Google Sheets sync
+
+See [SETUP.md](./SETUP.md) to get started locally, or [DEPLOYMENT.md](./DEPLOYMENT.md) to deploy to production.
+
 ## Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm
-- PostgreSQL 13+
-- Google OAuth credentials (from assessment tool)
-- Google Sheets API key or OAuth token
+- PostgreSQL 13+ (or Railway/Vercel Postgres for cloud)
+- Google OAuth credentials
+- GitHub account (for deployment)
 
-### 1. Install Dependencies
+### Option A: Local Development (Easiest for MVP)
+
 ```bash
+# 1. Clone and install
+git clone https://github.com/figriver/consulting-dashboard.git
+cd consulting-dashboard
 npm install
-```
 
-### 2. Set Up Environment
-
-Copy `.env.local.example` to `.env.local` and fill in your values:
-```bash
+# 2. Set up environment
 cp .env.local.example .env.local
-```
+# Edit .env.local with your values (see SETUP.md)
 
-Required environment variables:
-- `DATABASE_URL` — PostgreSQL connection string
-- `NEXTAUTH_SECRET` — Random secret for NextAuth (generate with `openssl rand -base64 32`)
-- `NEXTAUTH_URL` — Your app URL (e.g., `http://localhost:3000` for dev)
-- `GOOGLE_CLIENT_ID` — From assessment tool OAuth setup
-- `GOOGLE_CLIENT_SECRET` — From assessment tool OAuth setup
-- `GOOGLE_SHEETS_API_KEY` — Google Sheets API key (optional if using OAuth)
-
-### 3. Set Up Database
-
-Initialize Prisma and create database schema:
-```bash
-npx prisma migrate dev --name init
-```
-
-This creates all tables: `clients`, `users`, `sheets_configs`, `metrics_raw`, `coaching_config`, `coaching_alerts`, `audit_logs`.
-
-### 4. Seed Initial Data (Optional)
-
-Create a sample admin user and client:
-```bash
+# 3. Set up database (PostgreSQL locally or Railway)
+# See SETUP.md for detailed instructions
+npx prisma migrate deploy
 npx ts-node scripts/seed.ts
-```
 
-### 5. Start Development Server
-
-```bash
+# 4. Start dev server
 npm run dev
+
+# Visit http://localhost:3000 and sign in with Google
 ```
 
-Visit `http://localhost:3000` and sign in with Google OAuth.
+### Option B: Deploy to Vercel (Production)
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for step-by-step instructions:
+1. Push code to GitHub
+2. Connect to Vercel
+3. Set environment variables
+4. Deploy (1 click)
+
+**Estimated time:** 30 minutes
+
+## Setup Guides
+
+- **[SETUP.md](./SETUP.md)** — Local development & database setup (PostgreSQL, SQLite, Google OAuth)
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** — Production deployment to Vercel with Railway/Vercel Postgres
+
+## Environment Variables
+
+Create `.env.local` with:
+```bash
+# Database (PostgreSQL for production, SQLite for local dev)
+DATABASE_URL="postgresql://user:password@host:5432/db"
+# or for local SQLite: DATABASE_URL="file:./prisma/dev.db"
+
+# NextAuth
+NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
+NEXTAUTH_URL="http://localhost:3000"  # Change to your domain for production
+
+# Google OAuth (get from Google Cloud Console)
+GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-client-secret"
+
+# Optional: Google Sheets sync
+GOOGLE_SHEETS_API_KEY="your-api-key"
+```
+
+## Database Setup
+
+See [SETUP.md](./SETUP.md) for options:
+- **Railway** (recommended) — Free tier, easy setup
+- **Vercel Postgres** — Integrated with Vercel
+- **Local PostgreSQL** — For development
+- **Local SQLite** — Simplest for MVP testing
+
+Run migrations:
+```bash
+npx prisma migrate deploy
+npx ts-node scripts/seed.ts  # Optional: add test data
+```
 
 ---
 
@@ -142,30 +186,42 @@ This sends a message to an isolated agent session that:
 
 ---
 
-## Features (MVP)
+## Features (MVP Phase 1 Complete ✅)
 
-### For Michael (Admin)
-- ✅ View metrics for all 5 clients
-- ✅ See each client's leads → consults → sales funnel
-- ✅ Segment data by: medium, source, campaign, location, user, service_person
-- ✅ Filter by date range
-- ✅ Set custom coaching alert thresholds (per metric, per client)
-- ✅ Manual sync trigger button
-- ✅ View last sync time + status for each client
-- ✅ Audit log viewer (see what was stripped, when syncs ran, errors)
+### Dashboard UI ✅
+- ✅ KPI cards: total leads, consults, sales, average ROAS
+- ✅ Leads → Consults → Sales funnel (bar chart)
+- ✅ ROAS trend line (time series)
+- ✅ Spend by medium breakdown (pie chart)
+- ✅ Detailed metrics table with inline sorting
+- ✅ Responsive design (desktop, tablet, mobile)
 
-### For Clients (Practice Owners)
-- ✅ See only their own data
-- ✅ Same dashboard layout (metrics, charts, filters)
-- ✅ No admin controls or access to other clients
+### For Admins ✅
+- ✅ View metrics for all clients
+- ✅ Client selector dropdown
+- ✅ Manage clients: view sync status, sync now button
+- ✅ Configure coaching alert thresholds per metric
+- ✅ View and acknowledge coaching alerts with notes
+- ✅ Audit log viewer with action labels and timestamps
+- ✅ Date range filtering
 
-### Data Pipeline
-- ✅ Weekly auto-sync (Sunday 6 PM CT via OpenClaw cron)
+### For Clients ✅
+- ✅ View only their own metrics
+- ✅ Same dashboard UI (metrics, filters, charts)
+- ✅ No access to other clients' data or admin controls
+
+### Authentication ✅
+- ✅ Google OAuth sign-in
+- ✅ Role-based access control (ADMIN / CLIENT)
+- ✅ Session management with NextAuth.js
+
+### Data Pipeline (Ready)
+- ⏳ Weekly auto-sync (via OpenClaw cron — requires token refresh)
 - ✅ PII stripping for medical clients (First Name, Last Name, Phone, Email)
-- ✅ Upsert strategy (historical data updated as sales retroactively change)
-- ✅ Full audit trail (all stripping operations logged)
-- ✅ Error handling + retry logic (exponential backoff)
-- ✅ Manual refresh on-demand
+- ✅ Database schema optimized for metrics queries
+- ✅ Full audit trail support
+- ✅ Manual sync trigger endpoint
+- ✅ Seed script with 3 months of test data
 
 ---
 
@@ -226,33 +282,42 @@ For production PostgreSQL:
 
 ---
 
-## Known Limitations & TODOs
+## Known Limitations & TODOs (Phase 2+)
 
-### OAuth Token Management
-- Currently requires storing access token in env variables
-- **TODO:** Implement refresh token flow to auto-renew Google OAuth
-- **TODO:** Store token securely in database per user
+### MVP Phase 1 Complete (Current)
+- ✅ Frontend dashboard with KPI cards and Recharts visualizations
+- ✅ Admin panel with client management, coaching config, audit logs
+- ✅ Coaching alerts display with acknowledge functionality
+- ✅ All API routes implemented
+- ✅ Database schema finalized
+- ✅ Seed script for test data
 
-### Manual Refresh Endpoint
-- `/api/sync/trigger` exists but needs real token
-- **TODO:** Extract token from session cookies / secure storage
-- **TODO:** Implement proper error handling if token expired
+### Phase 2: TODO (Not critical for MVP)
 
-### Frontend Dashboard
-- **TODO:** Build admin dashboard UI (client selector, KPI cards, charts, alert config)
-- **TODO:** Build client dashboard UI (same layout, no admin controls)
-- **TODO:** Add coaching alert display + acknowledge feature
-- **TODO:** Add audit log viewer
+**Google Sheets Sync**
+- TODO: Implement OAuth token refresh flow
+- TODO: Extract tokens from session and store securely
+- TODO: Test sync with real Google Sheets data
+- TODO: Handle rate limiting and errors gracefully
 
-### Coaching Alerts
-- **TODO:** Trigger alerts when thresholds breached (during sync)
-- **TODO:** Show alerts on dashboard
-- **TODO:** Support email notifications
+**Automated Syncing**
+- TODO: Implement OpenClaw cron job for weekly syncs
+- TODO: Add retry logic with exponential backoff
+- TODO: Email notifications on sync failure
 
-### Scaling Considerations
-- **TODO:** Add data partitioning if >24 months of data on 50+ clients
-- **TODO:** Cache frequently accessed metrics
-- **TODO:** Consider real-time sync triggers instead of weekly
+**Coaching Alerts**
+- TODO: Trigger alerts during sync when metrics breach thresholds
+- TODO: Email notifications for unacknowledged alerts
+- TODO: Alert severity levels (warning vs critical)
+
+### Phase 3+: Scaling & Polish
+- TODO: Implement data partitioning for >24 months of data
+- TODO: Add caching layer for frequently accessed metrics
+- TODO: Real-time sync triggers (instead of weekly)
+- TODO: Custom report generation (PDF export)
+- TODO: Team collaboration features (notes, mentions)
+- TODO: Mobile app (React Native)
+- TODO: Advanced analytics (anomaly detection, forecasting)
 
 ---
 
