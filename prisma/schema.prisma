@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  role      Role       @default(CLIENT)
+  clientId  String?
+  client    Client?    @relation(fields: [clientId], references: [id])
+  
+  authProvider  String     @default("google")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([email])
+  @@index([clientId])
+}
+
+enum Role {
+  ADMIN
+  CLIENT
+}
+
+model Client {
+  id            String     @id @default(cuid())
+  name          String     @unique
+  isMedical     Boolean    @default(false)
+  
+  users         User[]
+  sheetsConfigs SheetsConfig[]
+  metricsRaw    MetricsRaw[]
+  coachingConfig CoachingConfig[]
+  coachingAlerts CoachingAlert[]
+  auditLogs     AuditLog[]
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([isMedical])
+}
+
+model SheetsConfig {
+  id            String     @id @default(cuid())
+  clientId      String
+  client        Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  sheetId       String     // Google Sheets ID
+  sheetName     String     // Human-readable sheet name
+  tabNames      String[]   // Array of tab names to sync
+  
+  lastSyncedAt  DateTime?
+  syncStatus    SyncStatus @default(PENDING)
+  lastError     String?
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([clientId])
+  @@index([syncStatus])
+  @@unique([clientId, sheetId])
+}
+
+enum SyncStatus {
+  PENDING
+  SYNCING
+  SUCCESS
+  FAILED
+}
+
+model MetricsRaw {
+  id            String     @id @default(cuid())
+  clientId      String
+  client        Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  date          DateTime   // Date of the metric
+  
+  // Segment dimensions
+  medium        String?
+  source        String?
+  campaign      String?
+  location      String?
+  user          String?
+  servicePerson String?
+  
+  // Raw metrics
+  leads         Int        @default(0)
+  consults      Int        @default(0)
+  sales         Int        @default(0)
+  spend         Decimal    @default(0) @db.Decimal(12, 2)
+  roas          Decimal    @default(0) @db.Decimal(8, 4)
+  
+  // Calculated conversion rates
+  leadsToConsultRate Decimal @default(0) @db.Decimal(5, 4)
+  leadsToSaleRate    Decimal @default(0) @db.Decimal(5, 4)
+  
+  // Audit trail
+  rawDataJson   Json?      // Original row data for audit
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([clientId])
+  @@index([clientId, date])
+  @@index([date])
+  @@unique([clientId, date, medium, source, campaign, location, user, servicePerson])
+}
+
+model CoachingConfig {
+  id            String     @id @default(cuid())
+  clientId      String
+  client        Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  metricType    CoachingMetricType
+  thresholdValue Decimal    @db.Decimal(8, 4)
+  enabled       Boolean    @default(true)
+  
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([clientId])
+  @@unique([clientId, metricType])
+}
+
+enum CoachingMetricType {
+  LEADS_TO_CONSULT_RATE
+  LEADS_TO_SALE_RATE
+  ROAS
+}
+
+model CoachingAlert {
+  id            String     @id @default(cuid())
+  clientId      String
+  client        Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  metricType    CoachingMetricType
+  actualValue   Decimal    @db.Decimal(8, 4)
+  thresholdValue Decimal    @db.Decimal(8, 4)
+  
+  triggeredAt   DateTime   @default(now())
+  acknowledgedAt DateTime?
+  acknowledgedBy String?   // User ID who acknowledged
+  notes         String?
+  
+  createdAt     DateTime   @default(now())
+
+  @@index([clientId])
+  @@index([triggeredAt])
+}
+
+model AuditLog {
+  id            String     @id @default(cuid())
+  clientId      String
+  client        Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  action        String     // e.g., "PII_STRIPPED", "SYNC_SUCCESS", "SYNC_FAILED"
+  details       Json?      // Action-specific details
+  
+  createdAt     DateTime   @default(now())
+
+  @@index([clientId])
+  @@index([createdAt])
+}
