@@ -10,7 +10,6 @@ export const authOptions: NextAuthOptions = {
       allowDangerousEmailAccountLinking: true,
     }),
   ],
-  trustHost: true,
   callbacks: {
     async signIn({ user }) {
       // Create or update user in database
