@@ -1,0 +1,342 @@
+================================================================================
+CONSULTING DASHBOARD - QUICK DEPLOYMENT CHECKLIST
+================================================================================
+
+ESTIMATED TIME: 45 minutes
+STATUS: Ready for deployment
+
+================================================================================
+CREDENTIALS YOU'LL NEED
+================================================================================
+
+□ NEXTAUTH_SECRET (already generated):
+  Sk3tvyBJE8o9pkUR1ylY/RPfwCCucTKuIaV/r4uZWgg=
+
+□ GitHub:
+  Repo: github.com/figriver/consulting-dashboard
+  Status: Code committed locally, needs push
+
+□ Railway PostgreSQL:
+  What you'll get: DATABASE_URL connection string
+  Action: Create account at railway.app
+
+□ Google OAuth:
+  What you'll get: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
+  Action: Create credentials at console.cloud.google.com
+
+□ Vercel:
+  What you'll get: Production URL (https://consulting-dashboard-XXXXX.vercel.app)
+  Action: Deploy at vercel.com
+
+================================================================================
+PHASE 1: GITHUB PUSH (5 minutes)
+================================================================================
+
+[ ] Try SSH push:
+    cd /home/superman/.openclaw/workspace/projects/consulting-dashboard
+    git push origin master
+
+[ ] If that fails, try HTTPS:
+    git remote set-url origin https://github.com/figriver/consulting-dashboard.git
+    git push origin master
+
+[ ] Verify: Code visible at github.com/figriver/consulting-dashboard
+
+Time: ________ Start: ________ End: ________
+
+================================================================================
+PHASE 2: RAILWAY POSTGRESQL (10 minutes)
+================================================================================
+
+[ ] Go to https://railway.app
+
+[ ] Create account (free tier)
+
+[ ] Create new project
+
+[ ] Add PostgreSQL service
+
+[ ] Wait 2-3 minutes for initialization
+
+[ ] Click PostgreSQL service
+
+[ ] Go to "Connect" tab
+
+[ ] Copy the connection URL:
+    DATABASE_URL = _________________________________
+
+[ ] Run migrations locally:
+    export DATABASE_URL="<your-connection-string>"
+    cd /home/superman/.openclaw/workspace/projects/consulting-dashboard
+    npx prisma migrate deploy
+
+[ ] Seed test data:
+    npx ts-node prisma/seed.ts
+
+[ ] Verify data created:
+    npx prisma studio
+    Should see: 2 clients, 3 users, 400+ metrics
+
+Time: ________ Start: ________ End: ________
+
+================================================================================
+PHASE 3: GOOGLE OAUTH CREDENTIALS (10 minutes)
+================================================================================
+
+[ ] Go to https://console.cloud.google.com
+
+[ ] Create new project: "consulting-dashboard-prod"
+
+[ ] Enable Google+ API:
+    - APIs & Services → Library
+    - Search "Google+"
+    - Click Enable
+
+[ ] Create OAuth Consent Screen:
+    - APIs & Services → OAuth consent screen
+    - Choose "External"
+    - App name: "Consulting Dashboard"
+    - User support email: [your email]
+    - Developer contact: [your email]
+    - Save
+
+[ ] Create OAuth Client ID:
+    - APIs & Services → Credentials
+    - Create Credentials → OAuth Client ID
+    - Type: Web application
+    - Add authorized origins:
+      □ https://localhost:3000
+      □ https://consulting-dashboard-XXXXX.vercel.app (add after Vercel)
+    - Add redirect URIs:
+      □ http://localhost:3000/api/auth/callback/google
+      □ https://consulting-dashboard-XXXXX.vercel.app/api/auth/callback/google (after)
+    - Create
+
+[ ] Copy credentials:
+    GOOGLE_CLIENT_ID = _________________________________
+    GOOGLE_CLIENT_SECRET = _________________________________
+
+Time: ________ Start: ________ End: ________
+
+================================================================================
+PHASE 4: VERCEL DEPLOYMENT (15 minutes)
+================================================================================
+
+[ ] Go to https://vercel.com
+
+[ ] Sign in (Michael's existing account)
+
+[ ] Click "Add New" → "Project"
+
+[ ] Click "Import Git Repository"
+
+[ ] Search for "consulting-dashboard"
+
+[ ] Click to select the repo
+
+[ ] On "Configure Project", set Environment Variables:
+
+    Database Connection:
+    [ ] DATABASE_URL = [from Railway Phase 2]
+
+    NextAuth Configuration:
+    [ ] NEXTAUTH_SECRET = Sk3tvyBJE8o9pkUR1ylY/RPfwCCucTKuIaV/r4uZWgg=
+    [ ] NEXTAUTH_URL = (leave blank for now)
+
+    Google OAuth:
+    [ ] GOOGLE_CLIENT_ID = [from Phase 3]
+    [ ] GOOGLE_CLIENT_SECRET = [from Phase 3]
+
+[ ] Click "Deploy"
+
+[ ] Wait 2-3 minutes for build
+
+[ ] Get your Vercel URL:
+    Vercel URL = https://consulting-dashboard-________________.vercel.app
+
+[ ] Note: You'll need this URL for the next phase!
+
+Time: ________ Start: ________ End: ________
+
+================================================================================
+PHASE 5: UPDATE OAUTH & REDEPLOY (5 minutes)
+================================================================================
+
+[ ] Your Vercel URL from Phase 4:
+    https://consulting-dashboard-________________.vercel.app
+
+[ ] Go back to Google Cloud Console
+
+[ ] Go to APIs & Services → Credentials
+
+[ ] Edit your OAuth Client ID
+
+[ ] Add this redirect URI:
+    https://consulting-dashboard-________________.vercel.app/api/auth/callback/google
+
+[ ] Save
+
+[ ] Go back to Vercel
+
+[ ] Go to project settings
+
+[ ] Edit Environment Variables
+
+[ ] Update NEXTAUTH_URL:
+    https://consulting-dashboard-________________.vercel.app
+
+[ ] Save
+
+[ ] Click "Redeploy"
+
+[ ] Wait 1-2 minutes for redeployment
+
+Time: ________ Start: ________ End: ________
+
+================================================================================
+PHASE 6: TESTING (5 minutes)
+================================================================================
+
+[ ] Visit your Vercel URL in a browser
+
+[ ] Verify landing page loads
+
+[ ] Click "Sign In with Google"
+
+[ ] You should be redirected to Google login
+
+[ ] Sign in with your Google account
+
+[ ] You should be redirected to dashboard
+
+[ ] Verify these work:
+    [ ] Metrics table displays data (should see 400+ rows)
+    [ ] Charts render without errors
+    [ ] KPI cards show numbers
+    [ ] Client selector works (if admin user)
+    [ ] Date filter works
+    [ ] No console errors (F12 → Console)
+
+[ ] Check Vercel logs for errors:
+    Go to: https://vercel.com/[your-username]/consulting-dashboard
+    Click latest deployment
+    Check "Runtime Logs" for errors
+
+[ ] Success! Your app is live at:
+    https://consulting-dashboard-________________.vercel.app
+
+Time: ________ Start: ________ End: ________
+
+================================================================================
+SUCCESS CHECKLIST
+================================================================================
+
+All of these should be complete:
+
+[ ] GitHub repo created with all code
+[ ] Railway PostgreSQL is running
+[ ] Migrations completed
+[ ] Seed data created (400+ metrics)
+[ ] Vercel deployment is live
+[ ] Can visit Vercel URL
+[ ] Google OAuth sign-in works
+[ ] Dashboard loads after sign-in
+[ ] Metrics display with data
+[ ] Admin client selector works
+[ ] Date filters work
+[ ] No errors in console/logs
+
+TOTAL TIME ELAPSED: _________ minutes
+
+================================================================================
+DOCUMENTATION REFERENCES
+================================================================================
+
+For more details, read these files:
+
+Quick Start:
+  /home/superman/.openclaw/workspace/projects/consulting-dashboard/NEXT_STEPS.md
+
+Detailed Guide:
+  /home/superman/.openclaw/workspace/projects/consulting-dashboard/DEPLOYMENT_AUTOMATION.md
+
+Step-by-Step:
+  /home/superman/.openclaw/workspace/projects/consulting-dashboard/DEPLOYMENT_CHECKLIST.md
+
+Status & Reference:
+  /home/superman/.openclaw/workspace/projects/consulting-dashboard/DEPLOYMENT_STATUS_FINAL.md
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+"Can't push to GitHub"
+  → Try HTTPS with personal access token
+  → Or ask for SSH key help
+
+"Railway PostgreSQL won't connect"
+  → Check connection string is correct
+  → Verify Railway dashboard shows it's running
+  → Try creating new database and retry
+
+"Vercel build fails"
+  → Check Vercel Build Logs
+  → Verify all 5 environment variables are set
+  → Check database connection works locally first
+
+"OAuth sign-in doesn't work"
+  → Verify CLIENT_ID and SECRET are correct
+  → Check redirect URI matches EXACTLY in Google Console
+  → Verify NEXTAUTH_SECRET and NEXTAUTH_URL in Vercel
+  → Try clearing browser cache and retry
+
+"Metrics don't load"
+  → Check Vercel Runtime Logs
+  → Verify migrations ran: npx prisma migrate status
+  → Verify seed data exists: npx prisma studio
+  → Check database connection works
+
+================================================================================
+AFTER DEPLOYMENT
+================================================================================
+
+Your dashboard is now live! Next steps:
+
+Optional Enhancements:
+  [ ] Connect to actual Google Sheets for metrics
+  [ ] Replace test data with real client data
+  [ ] Configure coaching alert thresholds
+  [ ] Set up email notifications
+  [ ] Add more visualizations
+
+Production Checklist:
+  [ ] Verify daily automatic backups are enabled (Railway)
+  [ ] Set up monitoring/alerts
+  [ ] Plan for scaling (if needed)
+  [ ] Configure analytics (optional)
+  [ ] Document access procedures
+
+================================================================================
+PRODUCTION URL
+================================================================================
+
+Your live dashboard will be at:
+
+https://consulting-dashboard-________________.vercel.app
+
+Share this with your clients!
+
+================================================================================
+SIGN-OFF
+================================================================================
+
+Deployment Started: _______________
+Deployment Completed: _______________
+Signed By: _______________
+
+All phases completed: [ ] YES  [ ] NO
+
+If any issues, refer to the documentation files listed above.
+
+Good luck! 🚀
+================================================================================
