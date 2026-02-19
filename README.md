@@ -14,9 +14,22 @@ Automated multi-client consulting dashboard replacing manual Tableau reports. Bu
 
 **Ready to Deploy & Start Testing with Real Data**
 
-Next: Set up database, deploy to Vercel, configure Google Sheets sync
+## 🚀 DEPLOYMENT - START HERE
 
-See [SETUP.md](./SETUP.md) to get started locally, or [DEPLOYMENT.md](./DEPLOYMENT.md) to deploy to production.
+**Status:** Build ✅ PASSING | Ready for Production ✅
+
+**Quick Deployment (45 minutes):**
+1. See [DEPLOYMENT_READY.md](./DEPLOYMENT_READY.md) for current status
+2. Follow [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md) for step-by-step instructions
+3. Need detailed info? See [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+**Critical Info:**
+- NEXTAUTH_SECRET: `Sk3tvyBJE8o9pkUR1ylY/RPfwCCucTKuIaV/r4uZWgg=`
+- GitHub Repo: `github.com/figriver/consulting-dashboard`
+- Deployment Target: Vercel + Railway PostgreSQL
+- Cost: $0-5/month (free tier eligible)
+
+**For Local Development:** See [SETUP.md](./SETUP.md)
 
 ## Quick Start
 
