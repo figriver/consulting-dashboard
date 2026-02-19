@@ -1,249 +1,313 @@
-# 🚀 Consulting Dashboard - Deployment Checklist
+# Deployment Checklist - Google Sheets Integration
 
-**Status:** Ready to deploy | Build: ✅ PASSING | Database: Ready | Code: Committed
+## Pre-Deployment (Development)
 
-## QUICK START - 45 Minutes to Live
+- [x] **Code Complete**
+  - Backend API endpoints: ✅
+  - Frontend UI component: ✅
+  - Admin panel integration: ✅
 
-### Phase 1: GitHub Repository (5 minutes)
+- [x] **Build Verification**
+  - TypeScript compilation: ✅ PASSED
+  - No errors or warnings: ✅
+  - All endpoints registered: ✅
 
-**Manual Steps Required:**
+- [x] **Code Quality**
+  - Admin auth checks: ✅ (all endpoints)
+  - Error handling: ✅
+  - Audit logging: ✅
+  - Database transactions: ✅
 
-1. Go to [github.com/new](https://github.com/new)
-2. Create repository:
-   - Name: `consulting-dashboard`
-   - Owner: `figriver`
-   - Description: "Automated multi-client consulting dashboard"
-   - Public (recommended for Vercel integration)
-   - Initialize with: **No** (we'll push existing repo)
-3. Copy the repository URL: `https://github.com/figriver/consulting-dashboard.git`
-
-**Then run locally:**
-
-```bash
-cd /home/superman/.openclaw/workspace/projects/consulting-dashboard
-
-# Verify remote is set correctly
-git remote remove origin 2>/dev/null || true
-git remote add origin https://github.com/figriver/consulting-dashboard.git
-
-# Push code to GitHub
-git push -u origin master
-
-# Verify: Go to github.com/figriver/consulting-dashboard - should see all code
-```
-
-### Phase 2: Railway PostgreSQL Database (10 minutes)
-
-**Manual Steps:**
-
-1. Go to [railway.app](https://railway.app)
-2. Sign up (free account, requires email)
-3. Create New Project
-4. Add → Database → PostgreSQL
-5. Wait 2-3 minutes for initialization
-6. Click the PostgreSQL instance
-7. Go to **Connect** tab
-8. Copy the connection string (look for `PostgreSQL` section):
-   ```
-   postgresql://user:password@host:port/railway
-   ```
-9. Save this as your **DATABASE_URL**
-
-**Then run locally:**
-
-```bash
-# Set the DATABASE_URL environment variable
-export DATABASE_URL="postgresql://user:password@host:port/railway"
-
-# Run migrations
-cd /home/superman/.openclaw/workspace/projects/consulting-dashboard
-npx prisma migrate deploy
-
-# Seed test data (creates 2 clients, 3 users, 3 months of metrics)
-npx ts-node scripts/seed.ts
-
-# Verify (optional - opens Prisma Studio UI)
-npx prisma studio
-# Should show: 2 Clients, 3 Users, ~400+ MetricsRaw records
-```
-
-**Database is now LIVE with test data ✅**
-
-### Phase 3: Vercel Deployment (15 minutes)
-
-**Manual Steps:**
-
-1. Go to [vercel.com](https://vercel.com)
-2. Sign in (or create account with GitHub)
-3. Click **"Add New..." → "Project"**
-4. Select **"Import Git Repository"**
-5. Search for `consulting-dashboard` (should find your GitHub repo)
-6. Click **"Import"**
-7. You'll see **"Configure Project"** screen
-8. Expand **"Environment Variables"** section and add these:
-
-| Variable | Value | Get From |
-|----------|-------|----------|
-| `DATABASE_URL` | `postgresql://...` | Railway (Step 2 above) |
-| `NEXTAUTH_SECRET` | `UPwWW7CF1HnHtSRsRspUQKWgm7UdaWN/CiSfRmV100Q=` | Generated (see below) |
-| `NEXTAUTH_URL` | `https://consulting-dashboard-XXX.vercel.app` | Will show after first deploy |
-| `GOOGLE_CLIENT_ID` | ⚠️ **(See below - ACTION REQUIRED)** | Google Cloud Console |
-| `GOOGLE_CLIENT_SECRET` | ⚠️ **(See below - ACTION REQUIRED)** | Google Cloud Console |
-
-**IMPORTANT: Google OAuth Setup (Required for Sign-In)**
-
-You need to create Google OAuth credentials. Two options:
-
-**Option A: Create New Google OAuth App** (5 minutes)
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project (or select existing): `consulting-dashboard-prod`
-3. Enable APIs: Go to **APIs & Services** → **OAuth consent screen**
-4. Choose "External" and fill in:
-   - App name: `Consulting Dashboard`
-   - User support email: your email
-   - Developer contact: your email
-5. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client IDs**
-6. Choose **Web application**
-7. Add Authorized Redirect URIs:
-   ```
-   https://consulting-dashboard-XXX.vercel.app/api/auth/callback/google
-   https://localhost:3000/api/auth/callback/google
-   ```
-8. Copy **Client ID** and **Client Secret**
-
-**Option B: Reuse Assessment Tool Credentials** (Already have them?)
-- Check your assessment tool configuration for existing Google OAuth credentials
-- Reuse the same Client ID and Secret
-
-**Option C: Manual OAuth Setup** (For later)
-- Leave blank for now: `GOOGLE_CLIENT_ID="temp"` and `GOOGLE_CLIENT_SECRET="temp"`
-- Dashboard will work but sign-in will fail
-- Add real credentials after initial deploy
-
-9. Click **"Deploy"**
-10. Wait 2-3 minutes for deployment to complete
-11. You'll get a URL like: `https://consulting-dashboard-abc123.vercel.app`
-
-**⚠️ After Deploy - Update NEXTAUTH_URL:**
-
-1. Go back to Vercel project settings
-2. Go to **Environment Variables**
-3. Edit `NEXTAUTH_URL` and set it to your actual Vercel URL (from deployment)
-4. Redeploy: **Deployments** → Last deploy → **Redeploy**
-
-### Phase 4: Testing (5 minutes)
-
-**Verify OAuth Login:**
-
-```bash
-# Visit your Vercel URL (e.g., https://consulting-dashboard-abc123.vercel.app)
-# Click "Sign In with Google"
-# You should be redirected to Google login
-# After signing in, should land on /dashboard
-```
-
-**Test Admin Dashboard:**
-
-1. Sign in with admin account: `admin@example.com`
-2. You should see **"Admin" label** in header
-3. You should see a **Client Selector** dropdown
-4. Select a client and see their metrics
-5. Try date filtering
-6. Verify charts and data load correctly
-
-**Test Client View:**
-
-1. Sign out
-2. Sign in as: `owner@coastaldental.com`
-3. You should see **only their client data**
-4. No client selector visible (clients only see their own data)
-5. Metrics should load
-
-## Environment Variables Reference
-
-```bash
-# Database (from Railway)
-DATABASE_URL="postgresql://user:password@host:port/railway"
-
-# NextAuth Secret (generate new one)
-NEXTAUTH_SECRET="UPwWW7CF1HnHtSRsRspUQKWgm7UdaWN/CiSfRmV100Q="
-
-# NextAuth URL (your Vercel deployment URL)
-NEXTAUTH_URL="https://consulting-dashboard-abc123.vercel.app"
-
-# Google OAuth (from Google Cloud Console or assessment tool)
-GOOGLE_CLIENT_ID="xxxx-xxxx.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="GOCSPX-xxxxxxxx"
-
-# Optional: Google Sheets API (for future automation)
-GOOGLE_SHEETS_API_KEY="AIzaSyDxxxx"
-GOOGLE_SHEETS_CREDENTIALS_JSON='{"type":"service_account",...}'
-```
-
-## 🎯 Definition of Done
-
-✅ **When deployment is complete, verify:**
-
-- [ ] GitHub repo created with all code pushed
-- [ ] Railway PostgreSQL database live with tables
-- [ ] Seed data created (2 clients, 3 users, ~400 metrics)
-- [ ] Vercel deployment successful and live
-- [ ] Google OAuth sign-in working
-- [ ] Admin user can see all clients and filter data
-- [ ] Client users see only their own data
-- [ ] Charts and metrics display correctly
-- [ ] Date filtering works
-- [ ] No console errors in Vercel logs
-
-## ⚠️ Troubleshooting
-
-**Issue: "Database connection failed"**
-- Verify `DATABASE_URL` is correct
-- Check Railway PostgreSQL is still running
-- Ensure Railway IP whitelist allows external connections (usually default)
-
-**Issue: "OAuth login shows error"**
-- Verify `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are correct
-- Verify redirect URI in Google Cloud Console matches your Vercel URL exactly
-- Verify `NEXTAUTH_URL` in Vercel matches your actual deployment URL
-
-**Issue: "Metrics not loading"**
-- Check Vercel Runtime Logs: **Deployments** → **Logs**
-- Verify migrations ran: `DATABASE_URL=... npx prisma migrate status`
-- Verify seed data exists: `DATABASE_URL=... npx prisma studio`
-
-**Issue: "Build failed"**
-- Check Vercel Build Logs
-- Common: Missing environment variables
-- Solution: Ensure all vars in Phase 3 are set
-
-## 📊 Next Steps After Deployment
-
-1. **Configure Real Google Sheets**
-   - Get client Google Sheets IDs
-   - Add to database via admin panel (future feature)
-   
-2. **Set Up Automated Sync**
-   - Create OpenClaw cron job for Sunday 6 PM CT
-   - Syncs from Google Sheets → Database → Dashboard
-
-3. **Add Real Client Data**
-   - Replace seed data with actual metrics
-   - Test PII stripping for medical clients
-
-4. **Enable Alerts**
-   - Configure coaching thresholds for each client
-   - Set up email notifications (if implementing)
-
-## Support
-
-- **Build issues?** Check Vercel build logs
-- **Database issues?** Check Railway dashboard
-- **OAuth issues?** Check Google Cloud Console settings
-- **Runtime errors?** Check Vercel runtime logs
+- [x] **Documentation**
+  - API contracts: ✅
+  - Setup guide: ✅
+  - Testing guide: ✅
+  - Troubleshooting: ✅
 
 ---
 
-**Estimated total time:** 45 minutes  
-**Most time spent waiting for:** Railway PostgreSQL initialization, Vercel build  
-**Cost:** $0-5/month (Railway free tier)
+## Staging Deployment
+
+### Pre-Deployment Tasks
+- [ ] Backup production database
+- [ ] Verify staging environment has clean data
+- [ ] Set `GOOGLE_SHEETS_ACCESS_TOKEN` in staging .env
+
+### Deployment Steps
+1. [ ] Pull latest code
+2. [ ] Run `npm install` (if dependencies changed)
+3. [ ] Run `npm run build`
+4. [ ] Verify build succeeds (0 errors)
+5. [ ] Start app: `npm start`
+6. [ ] Verify app loads at http://localhost:3000
+
+### Post-Deployment Verification
+- [ ] Admin panel loads without errors
+- [ ] Data Sources tab visible
+- [ ] Can access `/api/admin/sheets-config` endpoint
+- [ ] Can access `/api/admin/sync-all` endpoint
+
+### Test Scenarios (Staging)
+- [ ] Add test sheet config via UI
+- [ ] Verify appears in list
+- [ ] Manual sync: click "Sync" button
+- [ ] Status changes: PENDING → SYNCING → SUCCESS
+- [ ] Check audit logs for SYNC_COMPLETED
+- [ ] Delete sheet config
+- [ ] Verify data in metrics_raw table
+
+---
+
+## Production Deployment
+
+### Pre-Deployment (Done by DevOps)
+- [ ] Backup production database (must-have)
+- [ ] Verify all environment variables set:
+  - `GOOGLE_SHEETS_ACCESS_TOKEN`
+  - `DATABASE_URL`
+  - `NEXTAUTH_SECRET`
+- [ ] Schedule deployment for low-traffic window (e.g., Sunday morning)
+
+### Deployment Steps
+1. [ ] Tag release: `git tag -a v1.1.0-sheets-integration -m "Add Google Sheets integration"`
+2. [ ] Push tag: `git push origin v1.1.0-sheets-integration`
+3. [ ] Deploy to production:
+   ```bash
+   git pull
+   npm install
+   npm run build
+   npm start
+   ```
+4. [ ] Monitor app logs for errors (first 5 minutes)
+
+### Production Verification (First 30 minutes)
+- [ ] App loads without errors
+- [ ] Admin panel accessible
+- [ ] No 500 errors in logs
+- [ ] Database connections healthy
+- [ ] Manual test sync works
+- [ ] Metrics imported successfully
+
+### Post-Production Monitoring (First Week)
+- [ ] Check daily for cron job runs
+- [ ] Verify data quality in metrics_raw
+- [ ] Monitor error logs for PII stripping issues
+- [ ] Watch for any failed syncs (check Audit Logs)
+- [ ] Check disk space usage (imported data grows weekly)
+
+---
+
+## Cron Job Setup (Production)
+
+### Prerequisites
+- [ ] Production dashboard app running (port 3000)
+- [ ] GOOGLE_SHEETS_ACCESS_TOKEN set
+- [ ] OpenClaw daemon running in main session
+
+### Configuration Steps
+1. [ ] Read CRON_SETUP.md
+2. [ ] Choose cron implementation (Option A, B, or C)
+3. [ ] Configure in appropriate location:
+   - Option A: Update HEARTBEAT.md
+   - Option B: System crontab
+   - Option C: OpenClaw cron subsystem
+4. [ ] Test cron (manually call endpoint)
+5. [ ] Monitor first scheduled run (Sunday 6 PM CT)
+
+### Cron Verification
+- [ ] Check audit logs Monday morning for SYNC_COMPLETED
+- [ ] Verify metrics_raw updated with new data
+- [ ] No errors in logs
+- [ ] All configs marked SUCCESS (or FAILED with error details)
+
+---
+
+## Rollback Plan
+
+If critical issues discovered:
+
+### Immediate Rollback
+```bash
+# Revert code
+git revert <deployment-commit>
+npm run build
+npm start
+
+# OR use previous release
+git checkout v1.0.0
+npm run build
+npm start
+```
+
+### Data Cleanup (if needed)
+```bash
+# Stop the app first!
+
+# Restore from backup
+psql $DATABASE_URL < backup.sql
+
+# OR selective cleanup
+DELETE FROM metrics_raw 
+WHERE created_at >= '2024-02-19'::date;
+
+DELETE FROM sheets_config 
+WHERE created_at >= '2024-02-19'::date;
+```
+
+### Notification
+- [ ] Slack: Announce rollback
+- [ ] Jira: Create incident ticket
+- [ ] Team: Post-mortem within 24 hours
+
+---
+
+## Success Metrics
+
+After deployment, target these metrics:
+
+| Metric | Target | How to Measure |
+|--------|--------|----------------|
+| Sync success rate | > 95% | Audit logs |
+| Sync time | < 1 min (small sheets) | Timestamps in results |
+| Data accuracy | 100% | Manual spot checks |
+| PII stripping | 100% for medical | Audit logs |
+| Admin UX | No errors | User feedback |
+| Cron reliability | 100% | Weekly run verification |
+
+---
+
+## Documentation Handoff
+
+### For Admins
+- [ ] Distribute QUICK_REFERENCE.md
+- [ ] Distribute TESTING_SHEETS_INTEGRATION.md (relevant sections)
+- [ ] Send Slack announcement with link to docs
+
+### For DevOps
+- [ ] CRON_SETUP.md
+- [ ] DEPLOYMENT_CHECKLIST.md (this file)
+- [ ] Production environment config
+
+### For Support
+- [ ] QUICK_REFERENCE.md (troubleshooting section)
+- [ ] Common issues from TESTING_SHEETS_INTEGRATION.md
+- [ ] Contact info for escalation
+
+### For Developers
+- [ ] IMPLEMENTATION_SUMMARY.md
+- [ ] All code comments and inline documentation
+- [ ] Database schema (prisma/schema.prisma)
+
+---
+
+## Future Tasks (Post-Deployment)
+
+### High Priority
+- [ ] Configure per-user Google OAuth token storage (see CRON_SETUP.md TODO)
+- [ ] Add Telegram/email notifications for sync failures
+- [ ] Set up monitoring alerts for failed syncs
+
+### Medium Priority
+- [ ] Add column mapping UI for custom metric fields
+- [ ] Implement data validation before import
+- [ ] Add sheet preview feature
+
+### Low Priority
+- [ ] Real-time sync status via WebSocket
+- [ ] Manual data correction UI
+- [ ] Custom sync schedules per sheet
+
+---
+
+## Contact Information
+
+### Deployment Support
+- **DevOps Lead:** [Name]
+- **Database Admin:** [Name]
+- **Infrastructure:** [Name]
+
+### Product Ownership
+- **Feature Owner:** [Name]
+- **Backend Lead:** [Name]
+- **Frontend Lead:** [Name]
+
+### Support & Escalation
+- **On-Call:** [On-call schedule]
+- **Slack:** #engineering
+- **Issues:** Jira project DASH
+
+---
+
+## Sign-Off
+
+### Implementation Owner
+- **Name:** [Subagent]
+- **Date:** 2024-02-19
+- **Status:** ✅ COMPLETE
+
+### Testing Owner
+- **Name:** [To be assigned]
+- **Status:** ⏳ PENDING
+
+### Deployment Owner
+- **Name:** [DevOps, Michael]
+- **Status:** ⏳ PENDING
+
+### Product Owner Sign-Off
+- **Name:** [To be assigned]
+- **Status:** ⏳ PENDING
+
+---
+
+## Final Notes
+
+1. **No schema migrations needed** - All database tables already exist
+2. **Backward compatible** - No breaking changes to existing APIs
+3. **Audit trail complete** - All actions logged to audit_logs
+4. **Error handling robust** - Failures don't cascade or corrupt data
+5. **Admin auth enforced** - All endpoints check user role
+
+**Ready for deployment: YES ✅**
+
+---
+
+## Appendix: Quick Commands
+
+### Development Start
+```bash
+cd /home/superman/.openclaw/workspace/projects/consulting-dashboard
+export GOOGLE_SHEETS_ACCESS_TOKEN="your-token"
+npm run dev
+```
+
+### Production Build
+```bash
+npm run build
+npm start
+```
+
+### Database Backup (Pre-deployment)
+```bash
+pg_dump $DATABASE_URL > consulting-dashboard-backup-$(date +%Y%m%d).sql
+```
+
+### Verify Endpoints
+```bash
+curl http://localhost:3000/api/admin/sheets-config
+curl -X POST http://localhost:3000/api/admin/sync-all
+```
+
+### Monitor Logs
+```bash
+# Dashboard logs
+tail -f /var/log/consulting-dashboard.log
+
+# Audit events
+psql $DATABASE_URL -c "SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 20;"
+```
+
+---
+
+**Last Updated:** 2024-02-19  
+**Version:** 1.0  
+**Status:** Ready for Deployment

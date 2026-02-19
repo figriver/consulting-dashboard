@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { AdminClients } from '@/components/AdminClients';
 import { CoachingConfig } from '@/components/CoachingConfig';
 import { AuditLog } from '@/components/AuditLog';
+import { DataSources } from '@/components/DataSources';
 
 interface Client {
   id: string;
@@ -38,7 +39,7 @@ export default function AdminPage() {
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'clients' | 'coaching' | 'logs'>('clients');
+  const [activeTab, setActiveTab] = useState<'clients' | 'coaching' | 'sheets' | 'logs'>('clients');
 
   // Check admin access
   useEffect(() => {
@@ -196,6 +197,16 @@ export default function AdminPage() {
           Clients & Sync
         </button>
         <button
+          onClick={() => setActiveTab('sheets')}
+          className={`py-2 px-4 font-medium border-b-2 transition-colors ${
+            activeTab === 'sheets'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Data Sources
+        </button>
+        <button
           onClick={() => setActiveTab('coaching')}
           className={`py-2 px-4 font-medium border-b-2 transition-colors ${
             activeTab === 'coaching'
@@ -226,6 +237,15 @@ export default function AdminPage() {
         <div className="space-y-6">
           {activeTab === 'clients' && (
             <AdminClients clients={clients} onSync={handleSync} />
+          )}
+
+          {activeTab === 'sheets' && (
+            <DataSources
+              selectedClientId={selectedClientId}
+              onConfigCreated={() => {
+                // Could refresh data here if needed
+              }}
+            />
           )}
 
           {activeTab === 'coaching' && selectedClientId && coachingConfigs.length > 0 && (
