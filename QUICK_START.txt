@@ -1,0 +1,58 @@
+╔══════════════════════════════════════════════════════════════╗
+║      CONSULTING DASHBOARD - QUICK START DEPLOYMENT          ║
+║                    45-60 minute timeline                     ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 THREE PHASES:
+
+PHASE 1 (15 min, Michael):
+  → Open: RAILWAY_SETUP.md
+  → Create Railway account (free)
+  → Create PostgreSQL
+  → Send DATABASE_URL to agent
+
+PHASE 2 (10 min, Agent):
+  → Run: ./DEPLOY.sh "postgresql://..."
+  → Applies migrations
+  → Loads seed data (2 clients, 3 users, 400+ metrics)
+  → Verifies database
+
+PHASE 3 (20 min, Michael):
+  → Open: VERCEL_DEPLOYMENT.md
+  → Gather OAuth credentials (from Move or Improve project)
+  → Deploy to Vercel (import GitHub → set env vars → deploy)
+  → Test live dashboard
+
+════════════════════════════════════════════════════════════════
+
+🎯 WHAT YOU NEED TO PROVIDE:
+
+For Phase 1 (Railway):
+  ✓ Create new account
+  ✓ Send DATABASE_URL
+
+For Phase 3 (Vercel):
+  ✓ GOOGLE_CLIENT_ID (from Move or Improve)
+  ✓ GOOGLE_CLIENT_SECRET (from Move or Improve)
+  ✓ Generate NEXTAUTH_SECRET: openssl rand -base64 32
+
+════════════════════════════════════════════════════════════════
+
+✅ FILES READY:
+
+Documentation:
+  • DEPLOYMENT_START_HERE.md   ← Read first!
+  • RAILWAY_SETUP.md           ← Phase 1 instructions
+  • VERCEL_DEPLOYMENT.md       ← Phase 3 instructions
+
+Scripts:
+  • DEPLOY.sh                  ← Automated Phase 2 (agent)
+  • prisma/seed.ts             ← Test data generator
+
+════════════════════════════════════════════════════════════════
+
+🚀 READY TO START?
+
+Michael: Open DEPLOYMENT_START_HERE.md and follow the steps!
+
+════════════════════════════════════════════════════════════════
