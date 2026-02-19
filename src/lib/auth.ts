@@ -10,6 +10,34 @@ export const authOptions: NextAuthOptions = {
       allowDangerousEmailAccountLinking: true,
     }),
   ],
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NEXTAUTH_URL?.includes('localhost') ? '' : '__Secure-'}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: !process.env.NEXTAUTH_URL?.includes('localhost'),
+      },
+    },
+    callbackUrl: {
+      name: `${process.env.NEXTAUTH_URL?.includes('localhost') ? '' : '__Secure-'}next-auth.callback-url`,
+      options: {
+        sameSite: 'lax',
+        path: '/',
+        secure: !process.env.NEXTAUTH_URL?.includes('localhost'),
+      },
+    },
+    csrfToken: {
+      name: `${process.env.NEXTAUTH_URL?.includes('localhost') ? '' : '__Secure-'}next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: !process.env.NEXTAUTH_URL?.includes('localhost'),
+      },
+    },
+  },
   callbacks: {
     async signIn({ user }) {
       // Create or update user in database
