@@ -22,7 +22,7 @@ export default async function Home() {
           <div className="space-y-4">
             <p className="text-slate-400">Sign in to get started</p>
             <Link
-              href="/api/auth/signin"
+              href="/auth/signin"
               className="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition"
             >
               Sign In with Google
